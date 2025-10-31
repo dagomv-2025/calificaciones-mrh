@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Calificaciones - Maestría en Recursos Humanos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+        }
+
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .result.success .result-title {
+            color: #155724;
+        }
+
+        .result.error .result-title {
+            color: #721c24;
+        }
+
+        .result-content {
+            color: #333;
+        }
+
+        .result-content p {
+            margin: 8px 0;
+        }
+
+        .result-content strong {
+            color: #000;
+        }
+
+        .calificacion-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .calificacion-aprobado {
+            background: #28a745;
+            color: white;
+        }
+
+        .calificacion-reprobado {
+            background: #dc3545;
+            color: white;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #999;
+            font-size: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Consulta de Calificaciones</h1>
+            <p>Maestría en Recursos Humanos<br>Septiembre - Diciembre 2025</p>
+        </div>
+
+        <form id="consultaForm">
+            <div class="form-group">
+                <label for="matricula">Ingresa tu Matrícula:</label>
+                <input 
+                    type="text" 
+                    id="matricula" 
+                    name="matricula" 
+                    placeholder="Ejemplo: 12345"
+                    required
+                    autocomplete="off"
+                >
+            </div>
+            <button type="submit" class="btn">Consultar Calificación</button>
+        </form>
+
+        <div id="resultado" class="result"></div>
+
+        <div class="footer">
+            <p>Teoría de Recursos Humanos<br>Ciclo Sep-Dic 2025</p>
+        </div>
+    </div>
+
+    <script>
+        const calificaciones = 
+{
+  "10644": {
+    "nombre": "BRAYAN ALEXANDER GALINDO LUEVANO",
+    "calificacion": 10
+  },
+  "12559": {
+    "nombre": "ZAIRA ABIGAIL PEREZ DE LEON",
+    "calificacion": 10
+  },
+  "14326": {
+    "nombre": "MIRIAM JAZMIN BRIONES LLANAS",
+    "calificacion": 6
+  },
+  "14696": {
+    "nombre": "MONICA LIZETH ROMANO GONZALEZ",
+    "calificacion": 9
+  },
+  "1514": {
+    "nombre": "MARIO DE JESUS LEAL ISASI",
+    "calificacion": 10
+  },
+  "15846": {
+    "nombre": "JESUS SEALTIEL REYES GARCIA",
+    "calificacion": 10
+  },
+  "16177": {
+    "nombre": "LUIS ALEJANDRO MUÑIZ PERALES",
+    "calificacion": 10
+  },
+  "16602": {
+    "nombre": "RAMIRO GIL CONTRERAS TORRES",
+    "calificacion": 6
+  },
+  "16668": {
+    "nombre": "KEYLA GONZALEZ QUIROZ",
+    "calificacion": 10
+  },
+  "17171": {
+    "nombre": "ERICK MARGARITO BARBOSA GARCIA",
+    "calificacion": 9
+  },
+  "17853": {
+    "nombre": "LINDA ELENA GALVAN GONZALEZ",
+    "calificacion": 10
+  },
+  "19475": {
+    "nombre": "LAZARO BLADIMIR SALDAÑA DE LA ROSA",
+    "calificacion": 9
+  },
+  "19939": {
+    "nombre": "YOSSELIN ITZEL MOYEDA HINOJOSA",
+    "calificacion": 9
+  },
+  "20465": {
+    "nombre": "MAXIMILIANO GOMEZ OVALLE",
+    "calificacion": 10
+  },
+  "20582": {
+    "nombre": "ENRIQUE RAMON HERNANDEZ REYES",
+    "calificacion": 10
+  },
+  "20908": {
+    "nombre": "NADIA KARMINA GAMEZ MEDRANO",
+    "calificacion": 10
+  },
+  "21230": {
+    "nombre": "LUIS GAEL LUNA CARREON",
+    "calificacion": 10
+  },
+  "21391": {
+    "nombre": "ROCIO ANTONIO DE LA CRUZ",
+    "calificacion": 10
+  },
+  "21446": {
+    "nombre": "TANIA ALEJANDRA BARAJAS HIDALGO",
+    "calificacion": 6
+  },
+  "21505": {
+    "nombre": "BRENDA MARIA CAMPOS ARREOLA",
+    "calificacion": 9
+  },
+  "21591": {
+    "nombre": "LAURA JOSEFA CRUZ CASAS",
+    "calificacion": 10
+  },
+  "21634": {
+    "nombre": "ZITCIA ARIZBETH RAMIREZ MANCILLA",
+    "calificacion": 9
+  },
+  "21892": {
+    "nombre": "MELISSA RANGEL GONZALEZ",
+    "calificacion": 10
+  },
+  "21938": {
+    "nombre": "OMAR ALEJANDRO REZA GAMEZ",
+    "calificacion": 6
+  },
+  "21986": {
+    "nombre": "DANIELA IBARRA GUARDIOLA",
+    "calificacion": 10
+  },
+  "22076": {
+    "nombre": "MONSERRAT REYES MENDEZ",
+    "calificacion": 10
+  },
+  "22089": {
+    "nombre": "MARIA GORETI HERNANDEZ ALEJANDRO",
+    "calificacion": 9
+  },
+  "22129": {
+    "nombre": "ANGEL YAEL PEREZ MARTINEZ",
+    "calificacion": 10
+  },
+  "22266": {
+    "nombre": "MELANNY YISSEL VILLANUEVA TOVAR",
+    "calificacion": 9
+  },
+  "22404": {
+    "nombre": "FERNANDA BERNAL SALAS",
+    "calificacion": 10
+  },
+  "22424": {
+    "nombre": "ADAMARY LOPEZ CURA",
+    "calificacion": 9
+  },
+  "22479": {
+    "nombre": "NUBIA ARLET VILLARREAL RODRIGUEZ",
+    "calificacion": 10
+  },
+  "22594": {
+    "nombre": "MARIA GUADALUPE ARIAS FLORES",
+    "calificacion": 9
+  },
+  "22876": {
+    "nombre": "SANDI JANETH MALAGA TRINIDAD",
+    "calificacion": 10
+  },
+  "24002": {
+    "nombre": "ERICKA MARIEL CASTRO REYES",
+    "calificacion": 10
+  },
+  "24739": {
+    "nombre": "EILIANA PATRICIA RODRIGUEZ VAZQUEZ",
+    "calificacion": 10
+  },
+  "24873": {
+    "nombre": "CHRISTOPHER MARROQUIN SANTANA",
+    "calificacion": 10
+  },
+  "25027": {
+    "nombre": "HECTOR RIVERA FRAIRE",
+    "calificacion": 10
+  },
+  "25155": {
+    "nombre": "STEFANY ROSAURA RAMIREZ RIVAS",
+    "calificacion": 10
+  },
+  "25408": {
+    "nombre": "MARIO ANTONIO DAVILA ESPARZA",
+    "calificacion": 6
+  },
+  "25550": {
+    "nombre": "KARLA GUADALUPE JARAMILLO MARTINEZ",
+    "calificacion": 10
+  },
+  "25791": {
+    "nombre": "CESAR OZIEL ZITAL FLORES",
+    "calificacion": 9
+  },
+  "25792": {
+    "nombre": "DANA JAZMIN PÉREZ RODRIGUEZ",
+    "calificacion": 10
+  },
+  "25809": {
+    "nombre": "AZAEL PAEZ PINAL",
+    "calificacion": 10
+  },
+  "25815": {
+    "nombre": "SUSANA ELIZABETH RETIZ VALERIO",
+    "calificacion": 10
+  },
+  "25841": {
+    "nombre": "MICHEL ALEJANDRA FERNANDEZ SUAREZ",
+    "calificacion": 9
+  },
+  "25946": {
+    "nombre": "ESMERALDA MAYELA GAYTAN GUERRERO",
+    "calificacion": 10
+  },
+  "25991": {
+    "nombre": "IRIDIAN SOFIA AREVALO ESQUIVEL",
+    "calificacion": 9
+  },
+  "26027": {
+    "nombre": "FATIMA RUBI MATAMOROS LOPEZ",
+    "calificacion": 10
+  },
+  "26056": {
+    "nombre": "BRANDON AZAEL RAMIREZ MONSIVAIS",
+    "calificacion": 10
+  },
+  "26136": {
+    "nombre": "JACQUELINE ARMENTA ESPARZA",
+    "calificacion": 10
+  },
+  "26218": {
+    "nombre": "MARIA FERNANDA VILLANUEVA SILVA",
+    "calificacion": 10
+  },
+  "26230": {
+    "nombre": "LIZBETH HERNANDEZ GONZALEZ",
+    "calificacion": 10
+  },
+  "26264": {
+    "nombre": "NAHOMI CITLALI HERNANDEZ LARUMBE",
+    "calificacion": 10
+  },
+  "26280": {
+    "nombre": "JORGE DANIEL ARROYO REYNA",
+    "calificacion": 9
+  },
+  "26305": {
+    "nombre": "BRIANDA JERALDY TAPIA CASTILLO",
+    "calificacion": 10
+  },
+  "26318": {
+    "nombre": "SEBASTIAN LUCIO ARELLANO",
+    "calificacion": 10
+  },
+  "26321": {
+    "nombre": "GUADALUPE ELIZABETH GOMEZ GOMEZ",
+    "calificacion": 10
+  },
+  "26324": {
+    "nombre": "KARLA MARIA OLIVARES HERNANDEZ",
+    "calificacion": 10
+  },
+  "26325": {
+    "nombre": "ANA SUSANA OLIVARES HERNANDEZ",
+    "calificacion": 10
+  },
+  "26333": {
+    "nombre": "MARIA JACQUELINE NAVARRO GRIMALDO",
+    "calificacion": 10
+  },
+  "26338": {
+    "nombre": "ALMA DELIA ORTIZ CASTRO",
+    "calificacion": 10
+  },
+  "26399": {
+    "nombre": "BRIAN EDUARDO URDIALES GAYTAN",
+    "calificacion": 6
+  },
+  "26401": {
+    "nombre": "NADIA ANTONIO REYES",
+    "calificacion": 10
+  },
+  "26442": {
+    "nombre": "JORGE OSIEL ZERMEÑO SANCHEZ",
+    "calificacion": 10
+  },
+  "26452": {
+    "nombre": "DANNA PAOLA GOMEZ HINOJOSA",
+    "calificacion": 10
+  },
+  "26465": {
+    "nombre": "NANCY ACOSTA FRANCO",
+    "calificacion": 6
+  },
+  "26496": {
+    "nombre": "CRISTINA JUDIT DELGADO FIERRO",
+    "calificacion": 10
+  },
+  "26515": {
+    "nombre": "ELVIRA ELIZABETH SOLIS CAMACHO",
+    "calificacion": 9
+  },
+  "26529": {
+    "nombre": "MIGUEL ANGEL BUCIO FERNANDEZ",
+    "calificacion": 6
+  },
+  "26532": {
+    "nombre": "JHANET ISABEL REYES RAMIREZ",
+    "calificacion": 10
+  },
+  "26536": {
+    "nombre": "SHEILA JACKELIN HERNANDEZ GALLEGOS",
+    "calificacion": 10
+  },
+  "26553": {
+    "nombre": "MARIA INES TOVAR SALAZAR",
+    "calificacion": 9
+  },
+  "26564": {
+    "nombre": "ANA KAREN DIAZ HERNANDEZ",
+    "calificacion": 10
+  },
+  "26588": {
+    "nombre": "XIOMARA ABIGAIL CRUZ OLIVA",
+    "calificacion": 10
+  },
+  "26640": {
+    "nombre": "DULCE ESTRELLA DE LA ROSA GAMBOA",
+    "calificacion": 10
+  },
+  "26703": {
+    "nombre": "MELANIE VANINA ALVARADO CARRILLO",
+    "calificacion": 10
+  },
+  "26779": {
+    "nombre": "CESAR GALINDO SADA",
+    "calificacion": 10
+  },
+  "26815": {
+    "nombre": "CESAR ALBERTO SANCHEZ BARAJAS",
+    "calificacion": 10
+  },
+  "26900": {
+    "nombre": "SAMANTHA BERENICE GONZALEZ LOZANO",
+    "calificacion": 10
+  },
+  "26944": {
+    "nombre": "DEBANHI GUADALUPE VAZQUEZ LUNA",
+    "calificacion": 10
+  },
+  "26961": {
+    "nombre": "LUIS OSVALDO MANZANARES IZAGUIRRE",
+    "calificacion": 10
+  },
+  "26982": {
+    "nombre": "ARANZA YAMILETH RANGEL SALAZAR",
+    "calificacion": 10
+  },
+  "27029": {
+    "nombre": "KARLA JUDITH ESQUIVEL CRUZ",
+    "calificacion": 9
+  },
+  "27030": {
+    "nombre": "VANESSA ELIZABETH VARGAS RODRIGUEZ",
+    "calificacion": 9
+  },
+  "27053": {
+    "nombre": "JUAN LUIS HERNANDEZ PINEDA",
+    "calificacion": 10
+  },
+  "27093": {
+    "nombre": "IVONNE ALEJANDRA LUCIO GONZALEZ",
+    "calificacion": 9
+  },
+  "27107": {
+    "nombre": "SULLY MAGDALENA CARLIN TOVAR",
+    "calificacion": 10
+  },
+  "27142": {
+    "nombre": "MERARI DAMARELIA ROMO MELENDEZ",
+    "calificacion": 10
+  },
+  "27149": {
+    "nombre": "XIMENA MONSERRATH RIVERA ESCOBEDO",
+    "calificacion": 10
+  },
+  "27293": {
+    "nombre": "DANIELA ELIZABETH RODRIGUEZ SANCHEZ",
+    "calificacion": 10
+  },
+  "30098": {
+    "nombre": "VIRGINIA YADIRA SALGADO GOMEZ",
+    "calificacion": 10
+  },
+  "35127": {
+    "nombre": "PEDRO MORENO GONZALEZ",
+    "calificacion": 10
+  },
+  "4237": {
+    "nombre": "MARTINA VELOZ RAMIREZ",
+    "calificacion": 10
+  },
+  "4709": {
+    "nombre": "SANDY JANET MARTINEZ BENITEZ",
+    "calificacion": 10
+  },
+  "6683": {
+    "nombre": "PABLO ALEXIS CARVAJAL VAZQUEZ",
+    "calificacion": 10
+  },
+  "26790": {
+    "nombre": "NALLELY PATRICIA ESPINOZA MAGALLANES",
+    "calificacion": 10
+  },
+  "20869": {
+    "nombre": "CARMELA ANTONIO HERNANDEZ",
+    "calificacion": 10
+  }
+};
+
+        document.getElementById('consultaForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const matricula = document.getElementById('matricula').value.trim();
+            const resultadoDiv = document.getElementById('resultado');
+            
+            if (!matricula) {
+                mostrarError('Por favor ingresa tu matrícula');
+                return;
+            }
+
+            if (calificaciones[matricula]) {
+                const datos = calificaciones[matricula];
+                mostrarExito(datos.nombre, datos.calificacion);
+            } else {
+                mostrarError('Matrícula no encontrada. Por favor verifica que hayas ingresado correctamente tu número de matrícula.');
+            }
+        });
+
+        function mostrarExito(nombre, calificacion) {
+            const resultadoDiv = document.getElementById('resultado');
+            const esAprobado = calificacion >= 7;
+            const badgeClass = esAprobado ? 'calificacion-aprobado' : 'calificacion-reprobado';
+            const estatus = esAprobado ? 'APROBADO' : 'REPROBADO';
+            
+            resultadoDiv.className = 'result success';
+            resultadoDiv.innerHTML = `
+                <div class="result-title">✓ Calificación Encontrada</div>
+                <div class="result-content">
+                    <p><strong>Nombre:</strong> ${nombre}</p>
+                    <p><strong>Calificación Final:</strong></p>
+                    <div class="calificacion-badge ${badgeClass}">${calificacion}</div>
+                    <p style="margin-top: 10px;"><strong>Estatus:</strong> ${estatus}</p>
+                </div>
+            `;
+            resultadoDiv.style.display = 'block';
+        }
+
+        function mostrarError(mensaje) {
+            const resultadoDiv = document.getElementById('resultado');
+            resultadoDiv.className = 'result error';
+            resultadoDiv.innerHTML = `
+                <div class="result-title">✗ Error</div>
+                <div class="result-content">
+                    <p>${mensaje}</p>
+                </div>
+            `;
+            resultadoDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
