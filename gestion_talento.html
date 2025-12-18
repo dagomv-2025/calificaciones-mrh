@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión y Desarrollo del Talento Humano - Calificaciones</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 500px; width: 100%; padding: 40px; text-align: center; position: relative; }
+        .back-btn { position: absolute; top: 20px; left: 20px; text-decoration: none; color: #666; font-size: 14px; display: flex; align-items: center; gap: 5px; transition: color 0.3s; }
+        .back-btn:hover { color: #1e3c72; }
+        h1 { color: #333; margin-bottom: 10px; font-size: 24px; margin-top: 20px; }
+        .subtitle { color: #666; margin-bottom: 30px; font-size: 14px; }
+        .input-group { margin-bottom: 25px; text-align: left; }
+        label { display: block; color: #333; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+        input { width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; transition: all 0.3s; background: #f8f9fa; }
+        input:focus { outline: none; border-color: #2a5298; background: white; box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.1); }
+        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(42, 82, 152, 0.3); }
+        #resultado { margin-top: 30px; display: none; animation: fadeIn 0.5s ease; }
+        .result-card { background: #f8f9fa; border-radius: 15px; padding: 25px; border: 1px solid #e0e0e0; }
+        .alumno-nombre { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 15px; }
+        .calificacion-circle { width: 100px; height: 100px; background: #28a745; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 40px; font-weight: bold; margin: 0 auto 15px; box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3); }
+        .estatus { font-weight: 600; color: #28a745; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; }
+        .reprobado .calificacion-circle { background: #dc3545; box-shadow: 0 10px 20px rgba(220, 53, 69, 0.3); }
+        .reprobado .estatus { color: #dc3545; }
+        .pendiente .calificacion-circle { background: #ffc107; color: #333; box-shadow: 0 10px 20px rgba(255, 193, 7, 0.3); }
+        .pendiente .estatus { color: #ffc107; }
+        .error-msg { color: #dc3545; margin-top: 10px; font-size: 14px; display: none; }
+        .footer { margin-top: 30px; color: #999; font-size: 12px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">← Volver al menú</a>
+        <h1>Gestión y Desarrollo del Talento Humano</h1>
+        <p class="subtitle">Maestría en Recursos Humanos<br>Septiembre - Diciembre 2025</p>
+        <div class="input-group">
+            <label>Ingresa tu Matrícula:</label>
+            <input type="text" id="matricula" placeholder="Ejemplo: 12345" maxlength="6">
+            <div id="error" class="error-msg">Matrícula no encontrada. Verifica tus datos.</div>
+        </div>
+        <button onclick="consultar()">Consultar Calificación</button>
+        <div id="resultado">
+            <div class="result-card" id="resultCard">
+                <div class="estatus-msg" style="margin-bottom: 10px; color: #28a745; font-weight: 600;">✓ Calificación Encontrada</div>
+                <div class="alumno-nombre" id="nombreAlumno"></div>
+                <div style="font-size: 14px; color: #666; margin-bottom: 10px;">Calificación Final:</div>
+                <div class="calificacion-circle" id="calificacion"></div>
+                <div class="estatus" id="estatus"></div>
+            </div>
+        </div>
+        <div class="footer">Ciclo Sep-Dic 2025</div>
+    </div>
+    <script>
+        const db = 
+[
+  {
+    "matricula": "10644",
+    "nombre": "BRAYAN ALEXANDER GALINDO LUEVANO",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "12559",
+    "nombre": "ZAIRA ABIGAIL PEREZ DE LEON",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "14326",
+    "nombre": "MIRIAM JAZMIN BRIONES LLANAS",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "14696",
+    "nombre": "MONICA LIZETH ROMANO GONZALEZ",
+    "calificacion": "6",
+    "estatus": "REPROBADO"
+  },
+  {
+    "matricula": "1514",
+    "nombre": "MARIO DE JESUS LEAL ISASI",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "15846",
+    "nombre": "JESUS SEALTIEL REYES GARCIA",
+    "calificacion": "8",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "16177",
+    "nombre": "LUIS ALEJANDRO MUÑIZ PERALES",
+    "calificacion": "6",
+    "estatus": "REPROBADO"
+  },
+  {
+    "matricula": "16602",
+    "nombre": "RAMIRO GIL CONTRERAS TORRES",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "16668",
+    "nombre": "KEYLA GONZALEZ QUIROZ",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "17171",
+    "nombre": "ERICK MARGARITO BARBOSA GARCIA",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "17853",
+    "nombre": "LINDA ELENA GALVAN GONZALEZ",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "19475",
+    "nombre": "LAZARO BLADIMIR SALDAÑA DE LA ROSA",
+    "calificacion": "8",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "19939",
+    "nombre": "YOSSELIN ITZEL MOYEDA HINOJOSA",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "20465",
+    "nombre": "MAXIMILIANO GOMEZ OVALLE",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "20582",
+    "nombre": "ENRIQUE RAMON HERNANDEZ REYES",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "20908",
+    "nombre": "NADIA KARMINA GAMEZ MEDRANO",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "21230",
+    "nombre": "LUIS GAEL LUNA CARREON",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "21391",
+    "nombre": "ROCIO ANTONIO DE LA CRUZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "21446",
+    "nombre": "TANIA ALEJANDRA BARAJAS HIDALGO",
+    "calificacion": "NP",
+    "estatus": "PENDIENTE"
+  },
+  {
+    "matricula": "21505",
+    "nombre": "BRENDA MARIA CAMPOS ARREOLA",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "21591",
+    "nombre": "LAURA JOSEFA CRUZ CASAS",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "21634",
+    "nombre": "ZITCIA ARIZBETH RAMIREZ MANCILLA",
+    "calificacion": "NP",
+    "estatus": "PENDIENTE"
+  },
+  {
+    "matricula": "21892",
+    "nombre": "MELISSA RANGEL GONZALEZ",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "21938",
+    "nombre": "OMAR ALEJANDRO REZA GAMEZ",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "21986",
+    "nombre": "DANIELA IBARRA GUARDIOLA",
+    "calificacion": "8",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "22076",
+    "nombre": "MONSERRAT REYES MENDEZ",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "22089",
+    "nombre": "MARIA GORETI HERNANDEZ ALEJANDRO",
+    "calificacion": "6",
+    "estatus": "REPROBADO"
+  },
+  {
+    "matricula": "22129",
+    "nombre": "ANGEL YAEL PEREZ MARTINEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "22266",
+    "nombre": "MELANNY YISSEL VILLANUEVA TOVAR",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "22404",
+    "nombre": "FERNANDA BERNAL SALAS",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "22424",
+    "nombre": "ADAMARY LOPEZ CURA",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "22479",
+    "nombre": "NUBIA ARLET VILLARREAL RODRIGUEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "22594",
+    "nombre": "MARIA GUADALUPE ARIAS FLORES",
+    "calificacion": "6",
+    "estatus": "REPROBADO"
+  },
+  {
+    "matricula": "22876",
+    "nombre": "SANDI JANETH MALAGA TRINIDAD",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "24002",
+    "nombre": "ERICKA MARIEL CASTRO REYES",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "24739",
+    "nombre": "EILIANA PATRICIA RODRIGUEZ VAZQUEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "24873",
+    "nombre": "CHRISTOPHER MARROQUIN SANTANA",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "25027",
+    "nombre": "HECTOR RIVERA FRAIRE",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "25155",
+    "nombre": "STEFANY ROSAURA RAMIREZ RIVAS",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "25408",
+    "nombre": "MARIO ANTONIO DAVILA ESPARZA",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "25550",
+    "nombre": "KARLA GUADALUPE JARAMILLO MARTINEZ",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "25791",
+    "nombre": "CESAR OZIEL ZITAL FLORES",
+    "calificacion": "NP",
+    "estatus": "PENDIENTE"
+  },
+  {
+    "matricula": "25792",
+    "nombre": "DANA JAZMIN PÉREZ RODRIGUEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "25809",
+    "nombre": "AZAEL PAEZ PINAL",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "25815",
+    "nombre": "SUSANA ELIZABETH RETIZ VALERIO",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "25841",
+    "nombre": "MICHEL ALEJANDRA FERNANDEZ SUAREZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "25946",
+    "nombre": "ESMERALDA MAYELA GAYTAN GUERRERO",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "25991",
+    "nombre": "IRIDIAN SOFIA AREVALO ESQUIVEL",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26027",
+    "nombre": "FATIMA RUBI MATAMOROS LOPEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26056",
+    "nombre": "BRANDON AZAEL RAMIREZ MONSIVAIS",
+    "calificacion": "8",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26136",
+    "nombre": "JACQUELINE ARMENTA ESPARZA",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26218",
+    "nombre": "MARIA FERNANDA VILLANUEVA SILVA",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26230",
+    "nombre": "LIZBETH HERNANDEZ GONZALEZ",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26264",
+    "nombre": "NAHOMI CITLALI HERNANDEZ LARUMBE",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26280",
+    "nombre": "JORGE DANIEL ARROYO REYNA",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26305",
+    "nombre": "BRIANDA JERALDY TAPIA CASTILLO",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26318",
+    "nombre": "SEBASTIAN LUCIO ARELLANO",
+    "calificacion": "8",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26321",
+    "nombre": "GUADALUPE ELIZABETH GOMEZ GOMEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26324",
+    "nombre": "KARLA MARIA OLIVARES HERNANDEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26325",
+    "nombre": "ANA SUSANA OLIVARES HERNANDEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26333",
+    "nombre": "MARIA JACQUELINE NAVARRO GRIMALDO",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26338",
+    "nombre": "ALMA DELIA ORTIZ CASTRO",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26399",
+    "nombre": "BRIAN EDUARDO URDIALES GAYTAN",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26401",
+    "nombre": "NADIA ANTONIO REYES",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26442",
+    "nombre": "JORGE OSIEL ZERMEÑO SANCHEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26452",
+    "nombre": "DANNA PAOLA GOMEZ HINOJOSA",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26465",
+    "nombre": "NANCY ACOSTA FRANCO",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26496",
+    "nombre": "CRISTINA JUDIT DELGADO FIERRO",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26515",
+    "nombre": "ELVIRA ELIZABETH SOLIS CAMACHO",
+    "calificacion": "8",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26529",
+    "nombre": "MIGUEL ANGEL BUCIO FERNANDEZ",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26532",
+    "nombre": "JHANET ISABEL REYES RAMIREZ",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26536",
+    "nombre": "SHEILA JACKELIN HERNANDEZ GALLEGOS",
+    "calificacion": "8",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26553",
+    "nombre": "MARIA INES TOVAR SALAZAR",
+    "calificacion": "8",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26564",
+    "nombre": "ANA KAREN DIAZ HERNANDEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26588",
+    "nombre": "XIOMARA ABIGAIL CRUZ OLIVA",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26640",
+    "nombre": "DULCE ESTRELLA DE LA ROSA GAMBOA",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26703",
+    "nombre": "MELANIE VANINA ALVARADO CARRILLO",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26779",
+    "nombre": "CESAR GALINDO SADA",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26815",
+    "nombre": "CESAR ALBERTO SANCHEZ BARAJAS",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26900",
+    "nombre": "SAMANTHA BERENICE GONZALEZ LOZANO",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26944",
+    "nombre": "DEBANHI GUADALUPE VAZQUEZ LUNA",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26961",
+    "nombre": "LUIS OSVALDO MANZANARES IZAGUIRRE",
+    "calificacion": "8",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26982",
+    "nombre": "ARANZA YAMILETH RANGEL SALAZAR",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "27029",
+    "nombre": "KARLA JUDITH ESQUIVEL CRUZ",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "27030",
+    "nombre": "VANESSA ELIZABETH VARGAS RODRIGUEZ",
+    "calificacion": "NP",
+    "estatus": "PENDIENTE"
+  },
+  {
+    "matricula": "27053",
+    "nombre": "JUAN LUIS HERNANDEZ PINEDA",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "27093",
+    "nombre": "IVONNE ALEJANDRA LUCIO GONZALEZ",
+    "calificacion": "8",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "27107",
+    "nombre": "SULLY MAGDALENA CARLIN TOVAR",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "27142",
+    "nombre": "MERARI DAMARELIA ROMO MELENDEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "27149",
+    "nombre": "XIMENA MONSERRATH RIVERA ESCOBEDO",
+    "calificacion": "8",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "27293",
+    "nombre": "DANIELA ELIZABETH RODRIGUEZ SANCHEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "30098",
+    "nombre": "VIRGINIA YADIRA SALGADO GOMEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "35127",
+    "nombre": "PEDRO MORENO GONZALEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "4237",
+    "nombre": "MARTINA VELOZ RAMIREZ",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "4709",
+    "nombre": "SANDY JANET MARTINEZ BENITEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "6683",
+    "nombre": "PABLO ALEXIS CARVAJAL VAZQUEZ",
+    "calificacion": "10",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "20869",
+    "nombre": "CARMELA ANTONIO HERNANDEZ",
+    "calificacion": "8",
+    "estatus": "APROBADO"
+  },
+  {
+    "matricula": "26790",
+    "nombre": "NALLELY PATRICIA ESPINOZA MAGALLANES",
+    "calificacion": "9",
+    "estatus": "APROBADO"
+  }
+];
+
+        function consultar() {
+            const input = document.getElementById('matricula').value.trim();
+            const error = document.getElementById('error');
+            const resultado = document.getElementById('resultado');
+            const resultCard = document.getElementById('resultCard');
+            
+            // Reset
+            error.style.display = 'none';
+            resultado.style.display = 'none';
+            resultCard.className = 'result-card';
+            
+            if (!input) return;
+            
+            const alumno = db.find(a => a.matricula === input);
+            
+            if (alumno) {
+                document.getElementById('nombreAlumno').innerText = alumno.nombre;
+                document.getElementById('calificacion').innerText = alumno.calificacion;
+                document.getElementById('estatus').innerText = "Estatus: " + alumno.estatus;
+                
+                if (alumno.estatus === 'REPROBADO') {
+                    resultCard.classList.add('reprobado');
+                } else if (alumno.estatus === 'PENDIENTE') {
+                    resultCard.classList.add('pendiente');
+                }
+                
+                resultado.style.display = 'block';
+            } else {
+                error.style.display = 'block';
+            }
+        }
+
+        // Permitir Enter para buscar
+        document.getElementById('matricula').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                consultar();
+            }
+        });
+    </script>
+</body>
+</html>
