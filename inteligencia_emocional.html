@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inteligencia Emocional - Consulta de Calificaciones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <div class="glass-effect rounded-2xl shadow-2xl w-full max-w-md p-8 text-center transform transition-all hover:scale-[1.01]">
+        
+        <!-- Encabezado -->
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-800 mb-2">Inteligencia Emocional</h1>
+            <p class="text-gray-500 text-sm uppercase tracking-wide">Maestría en Recursos Humanos</p>
+            <div class="h-1 w-20 bg-purple-500 mx-auto mt-4 rounded-full"></div>
+        </div>
+
+        <!-- Formulario -->
+        <div id="searchSection" class="space-y-4">
+            <div class="relative">
+                <input type="number" id="matriculaInput" placeholder="Ingresa tu Matrícula" 
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-center text-lg"
+                    onkeypress="if(event.key === 'Enter') buscarCalificacion()">
+            </div>
+            
+            <button onclick="buscarCalificacion()" 
+                class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300 shadow-lg flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                Consultar Calificación
+            </button>
+            
+            <a href="index.html" class="block text-purple-600 hover:text-purple-800 text-sm mt-4 font-medium">
+                ← Volver al Menú Principal
+            </a>
+        </div>
+
+        <!-- Resultado -->
+        <div id="resultSection" class="hidden mt-8 animate-fade-in">
+            <div class="p-6 bg-gray-50 rounded-xl border border-gray-100">
+                <p class="text-sm text-gray-500 mb-1">Alumno</p>
+                <h2 id="alumnoNombre" class="text-lg font-bold text-gray-800 mb-4"></h2>
+                
+                <div class="flex justify-center items-center gap-4 mb-4">
+                    <div class="text-center">
+                        <p class="text-xs text-gray-400 uppercase">Calificación Final</p>
+                        <div id="calificacionCircle" class="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-lg mx-auto mt-2 transition-transform hover:scale-110">
+                            <span id="calificacionValor"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="estatusBadge" class="inline-block px-4 py-1 rounded-full text-sm font-bold tracking-wide"></div>
+            </div>
+
+            <button onclick="resetSearch()" class="mt-6 text-gray-400 hover:text-gray-600 text-sm underline">
+                Nueva consulta
+            </button>
+        </div>
+
+        <!-- Mensaje de Error -->
+        <div id="errorMsg" class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+            <span id="errorText">Matrícula no encontrada</span>
+        </div>
+
+        <!-- Pie de página -->
+        <div class="mt-8 text-xs text-gray-400 border-t pt-4">
+            <p>Maestría en Recursos Humanos</p>
+            <p>Ciclo Enero - Abril 2026</p>
+        </div>
+    </div>
+
+    <script>
+        const db = 
+[
+    {
+        "matricula": "10928.0",
+        "nombre": "BRENDA VERONICA GONZALEZ CALDERON",
+        "calificacion": 8,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "12794.0",
+        "nombre": "IKER JARET ESPINOSA CISNEROS",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "14543.0",
+        "nombre": "EVERARDO CRUZ MATA",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "15047.0",
+        "nombre": "CECILIA LUCIA RUBIO VAZQUEZ",
+        "calificacion": 9,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "15278.0",
+        "nombre": "ANGEL ERNESTO LOPEZ SALINAS",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "15661.0",
+        "nombre": "JOSE ALFREDO JIMENEZ FRANCISCO",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "16421.0",
+        "nombre": "JUAN GILBERTO SALAZAR TAMAYO",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "16625.0",
+        "nombre": "FERNANDO QUIROZ BOCANEGRA",
+        "calificacion": 8,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "16843.0",
+        "nombre": "INGRID ESTRELLA DELGADO GONZALEZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "17090.0",
+        "nombre": "JUAN CARLOS PURECO LLANAS",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "18408.0",
+        "nombre": "NELSON OSIEL CARDOZA GRANADOS",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "19647.0",
+        "nombre": "VICTOR MANUEL MU\u00d1OZ PUENTE",
+        "calificacion": 8,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "20405.0",
+        "nombre": "ALFREDO MONROY GUTIERREZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "20623.0",
+        "nombre": "ARGELIA JAQUELINE TREVI\u00d1O MORENO",
+        "calificacion": 9,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "21154.0",
+        "nombre": "KARINA LIZBETH GONZALEZ REYES",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "21874.0",
+        "nombre": "EMILIANO HERNANDEZ LOERA",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "22034.0",
+        "nombre": "ANGIE ARLETT PEDRAZA xxx",
+        "calificacion": 7,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "22079.0",
+        "nombre": "ALBA JOSELINE MORALES VALDEZ",
+        "calificacion": "N/A",
+        "estatus": "PENDIENTE"
+    },
+    {
+        "matricula": "22104.0",
+        "nombre": "ERICKA REGINA HERNANDEZ RODRIGUEZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "22250.0",
+        "nombre": "FERNANDA HERNANDEZ OLMOS",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "22251.0",
+        "nombre": "REGINA HERNANDEZ OLMOS",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "22558.0",
+        "nombre": "MYLAN ADRIAN RIVAS ALMAGUER*",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "22607.0",
+        "nombre": "DEVANY ISBET AGUILAR NU\u00d1EZ",
+        "calificacion": 9,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "2261.0",
+        "nombre": "GRISELDA MARINA DE LA ROSA SANCHEZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "2265.0",
+        "nombre": "OZIEL ALEJANDRO MORALES GARCIA",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "22716.0",
+        "nombre": "GUDELIO LUIS FRANCISCO FLORES PADILLA",
+        "calificacion": 9,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "22940.0",
+        "nombre": "JOSE RAYMUNDO REYNA MENDOZA",
+        "calificacion": 6,
+        "estatus": "REPROBADO"
+    },
+    {
+        "matricula": "23037.0",
+        "nombre": "EDUARDO SAMUEL SIERRA GONZALEZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "23586.0",
+        "nombre": "CESAR OCTAVIO MANTECON RAMOS",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "23625.0",
+        "nombre": "BENNY BRANDON FRAUSTO ALONSO",
+        "calificacion": 9,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "24267.0",
+        "nombre": "ORLANDO SIFUENTES CELEDON",
+        "calificacion": 8,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "24882.0",
+        "nombre": "HIRAM ESAU RAMIREZ CARRILLO",
+        "calificacion": 9,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "24952.0",
+        "nombre": "KARIME ALEJANDRA MARTINEZ GUARDADO",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "25162.0",
+        "nombre": "CHRISTOFER EMANUEL LEIJA SAUCEDO",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "25286.0",
+        "nombre": "DANIEL NAVA ESQUIVEL",
+        "calificacion": 4,
+        "estatus": "REPROBADO"
+    },
+    {
+        "matricula": "25526.0",
+        "nombre": "JESUS EFRAIN HERNANDEZ PUERTOS",
+        "calificacion": 8,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "25609.0",
+        "nombre": "ATZIN ABRIL SURIANO GONZALEZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "26191.0",
+        "nombre": "RODRIGO RICARDO FACUNDO",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "26385.0",
+        "nombre": "BRISEIDA SOFIA CASTILLO SANDATE",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "26910.0",
+        "nombre": "HECTOR MANUEL PEREZ MENDOZA",
+        "calificacion": 9,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27170.0",
+        "nombre": "RICARDA GUADALUPE HERNANDEZ NU\u00d1EZ",
+        "calificacion": 9,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27344.0",
+        "nombre": "ALEJANDRO HERNANDEZ HERNANDEZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27362.0",
+        "nombre": "ALEXIS EDUARDO IBARRA MARTINES",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27374.0",
+        "nombre": "MIGUEL ANGEL SANTILLAN RODRIGUEZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27382.0",
+        "nombre": "GRECIA CAROLINA GARCIA MORANCHEL",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27411.0",
+        "nombre": "ERICK ANTONIO LOZANO DE LA CRUZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27418.0",
+        "nombre": "JULIO CESAR AYALA MEDRANO",
+        "calificacion": 8,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27424.0",
+        "nombre": "FRANCISCO JAVIER VAZQUEZ RODRIGUEZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27441.0",
+        "nombre": "VERONICA LOPEZ MIRAVETE",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27462.0",
+        "nombre": "NORA ALBA RUIZ RODRIGUEZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27463.0",
+        "nombre": "JOSE OMAR ALMARAZ GONZALEZ",
+        "calificacion": 6,
+        "estatus": "REPROBADO"
+    },
+    {
+        "matricula": "27480.0",
+        "nombre": "TANIA LIZBETH RODRIGUEZ GARCIA",
+        "calificacion": 8,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27503.0",
+        "nombre": "RUBEN CORNELIO ANTOPIA BUSTOS",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27515.0",
+        "nombre": "MIGUEL ANGEL DELGADO SERRANO",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27527.0",
+        "nombre": "SALOME PANZO TEMOXTLE",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27529.0",
+        "nombre": "ROLANDO PUENTE CASILLAS",
+        "calificacion": 8,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27535.0",
+        "nombre": "DARIO SEBASTIAN DE LEON SOLIS",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27544.0",
+        "nombre": "EMILIANO RIVERA MONTELONGO",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27547.0",
+        "nombre": "ADAL YAHIR CARDONA MARTINEZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27551.0",
+        "nombre": "ANGEL RAUL ARRIAGA AGREDANO",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27559.0",
+        "nombre": "BRAULIO ANTONIO RODRIGUEZ DUE\u00d1AS",
+        "calificacion": 4,
+        "estatus": "REPROBADO"
+    },
+    {
+        "matricula": "27565.0",
+        "nombre": "JOSHUA ARMANDO SANCHEZ GONZALEZ",
+        "calificacion": 8,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27574.0",
+        "nombre": "JESUS ALBERTO SORIA RODRIGUEZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27586.0",
+        "nombre": "AMERICA IVONNE RIVERA MEDINA",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27591.0",
+        "nombre": "BRANDON ISAAC SILVA ROJAS",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27592.0",
+        "nombre": "ANDREA SOFIA PEREZ PEREZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27597.0",
+        "nombre": "MOISES NEFTALI IRACHETA GAMEZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27606.0",
+        "nombre": "LORENA MARIBEL GUERRERO CHAVEZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27638.0",
+        "nombre": "ARI DANIEL GONZALEZ SEGURA",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27640.0",
+        "nombre": "OSCAR IVAN ORTIZ CERDA",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27647.0",
+        "nombre": "ALBA YAMIN FIERRO WILLIAMS",
+        "calificacion": 8,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27659.0",
+        "nombre": "PEDRO FRANCISCO ESCOBEDO HERRERA",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27700.0",
+        "nombre": "JENNIFER KARINA RUIZ OCA\u00d1A",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27753.0",
+        "nombre": "ASTRID ALEJANDRA ESTRADA PEREZ",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "27789.0",
+        "nombre": "JULIAN PIEDRA GARCIA",
+        "calificacion": 4,
+        "estatus": "REPROBADO"
+    },
+    {
+        "matricula": "30583.0",
+        "nombre": "ADRIAN EMMANUEL PALACIOS MIRANDA",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "33208.0",
+        "nombre": "ISAAC SOSA VICENTE",
+        "calificacion": 10,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "35630.0",
+        "nombre": "FRANCISCO JOSE ALDAPE ARROYO",
+        "calificacion": 4,
+        "estatus": "REPROBADO"
+    },
+    {
+        "matricula": "4376.0",
+        "nombre": "EMANUEL GOMEZ DOMINGUEZ",
+        "calificacion": 9,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "7333.0",
+        "nombre": "CARMEN LORENA BERNAL LARA",
+        "calificacion": 8,
+        "estatus": "APROBADO"
+    },
+    {
+        "matricula": "8921.0",
+        "nombre": "ELIGIO MARFILE\u00d1O DE LEON",
+        "calificacion": 8,
+        "estatus": "APROBADO"
+    }
+];
+
+        function buscarCalificacion() {
+            const matricula = document.getElementById('matriculaInput').value.trim();
+            const resultSection = document.getElementById('resultSection');
+            const searchSection = document.getElementById('searchSection');
+            const errorMsg = document.getElementById('errorMsg');
+            
+            // Buscar alumno
+            const alumno = db.find(a => a.matricula === matricula);
+
+            if (alumno) {
+                // Mostrar resultados
+                document.getElementById('alumnoNombre').textContent = alumno.nombre;
+                document.getElementById('calificacionValor').textContent = alumno.calificacion;
+                
+                const circle = document.getElementById('calificacionCircle');
+                const badge = document.getElementById('estatusBadge');
+                
+                // Configurar colores según estatus
+                if (alumno.estatus === 'APROBADO') {
+                    circle.className = "w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-lg mx-auto mt-2 bg-green-500";
+                    badge.className = "inline-block px-4 py-1 rounded-full text-sm font-bold tracking-wide bg-green-100 text-green-700";
+                    badge.textContent = "APROBADO";
+                } else if (alumno.estatus === 'REPROBADO') {
+                    circle.className = "w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-lg mx-auto mt-2 bg-red-500";
+                    badge.className = "inline-block px-4 py-1 rounded-full text-sm font-bold tracking-wide bg-red-100 text-red-700";
+                    badge.textContent = "REPROBADO";
+                } else {
+                    circle.className = "w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-lg mx-auto mt-2 bg-yellow-500";
+                    badge.className = "inline-block px-4 py-1 rounded-full text-sm font-bold tracking-wide bg-yellow-100 text-yellow-700";
+                    badge.textContent = "PENDIENTE";
+                }
+
+                searchSection.classList.add('hidden');
+                resultSection.classList.remove('hidden');
+                errorMsg.classList.add('hidden');
+            } else {
+                // Mostrar error
+                errorMsg.classList.remove('hidden');
+                setTimeout(() => errorMsg.classList.add('hidden'), 3000);
+            }
+        }
+
+        function resetSearch() {
+            document.getElementById('matriculaInput').value = '';
+            document.getElementById('resultSection').classList.add('hidden');
+            document.getElementById('searchSection').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
